@@ -1,12 +1,13 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Captcha.Enums;
-using Captcha.Helpers;
 using Captcha.Options;
-using Captcha.Store;
+using Captcha.Services.Generation;
+using Captcha.Services.Manage.Models;
+using Captcha.Services.Store;
 using Microsoft.Extensions.Options;
 
-namespace Captcha.Services;
+namespace Captcha.Services.Manage;
 
 public sealed class CaptchaManager
 {
@@ -38,10 +39,13 @@ public sealed class CaptchaManager
     {
         var answer = NewAnswer();
         var id = NewId();
+#pragma warning disable CS0618 // Type or member is obsolete
         var png = _images.Render(answer); // render first: a failure leaves nothing in Redis
+#pragma warning restore CS0618 // Type or member is obsolete
 
         await _store.PutAsync(id, Mac(id, purpose, answer), purpose, _o.MaxAttempts,
-            TimeSpan.FromSeconds(_o.TtlSeconds));
+            ttl: TimeSpan.FromSeconds(_o.TtlSeconds));
+
         return new IssuedChallenge(id, png, _o.TtlSeconds, _o.MaxAttempts);
     }
 
@@ -49,17 +53,17 @@ public sealed class CaptchaManager
     {
         // 1. Atomically reserve an attempt (also enforces purpose + expiry + attempt cap).
         var stored = await _store.ConsumeAttemptAsync(id, purpose);
-        if (stored is null) return new(VerifyStatus.ExpiredOrUsed);
+        if (stored is null) return new VerifyOutcome(VerifyStatus.ExpiredOrUsed);
 
         // 2. Constant-time comparison of MACs.
-        var candidate = Mac(id, purpose, Normalize(answer));
-        if (!CryptographicOperations.FixedTimeEquals(stored.Mac, candidate))
-            return new(VerifyStatus.Incorrect, stored.AttemptsLeft);
+        var candidate = Mac(id, purpose, normalisedAnswer: Normalize(answer));
+        if (!CryptographicOperations.FixedTimeEquals(left: stored.Mac, right: candidate))
+            return new VerifyOutcome(VerifyStatus.Incorrect, stored.AttemptsLeft);
 
         // 3. Single-use gate: among concurrent correct verifications only one DEL returns true.
         return await _store.TryDeleteAsync(id)
-            ? new(VerifyStatus.Success)
-            : new(VerifyStatus.ExpiredOrUsed);
+            ? new VerifyOutcome(VerifyStatus.Success)
+            : new VerifyOutcome(VerifyStatus.ExpiredOrUsed);
     }
 
     // ---- helpers -------------------------------------------------------------------------
@@ -72,12 +76,15 @@ public sealed class CaptchaManager
     {
         var chars = new char[_o.AnswerLength];
         for (var i = 0; i < chars.Length; i++)
+        {
             chars[i] = Alphabet[RandomNumberGenerator.GetInt32(Alphabet.Length)]; // unbiased CSPRNG
+        }
+
         return new string(chars);
     }
 
     private static string NewId() =>
-        Convert.ToBase64String(RandomNumberGenerator.GetBytes(16))
+        Convert.ToBase64String(inArray: RandomNumberGenerator.GetBytes(count: 16))
             .TrimEnd('=').Replace('+', '-').Replace('/', '_'); // 22 chars
 
     private static string Normalize(string s) =>

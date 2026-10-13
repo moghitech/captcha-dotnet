@@ -1,4 +1,4 @@
-﻿namespace Captcha.Models;
+﻿namespace Captcha.VMs;
 
 /// <summary>
 /// Represents the response returned after verifying a CAPTCHA challenge, including the outcome and optional diagnostic details.

@@ -1,8 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EE162A63-5C60-48C3-81ED-5B02F6595D7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Captcha", "src\Captcha\Captcha.csproj", "{414E0556-25F2-40F8-A6D8-049F0B82BC8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{414E0556-25F2-40F8-A6D8-049F0B82BC8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{414E0556-25F2-40F8-A6D8-049F0B82BC8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{414E0556-25F2-40F8-A6D8-049F0B82BC8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{414E0556-25F2-40F8-A6D8-049F0B82BC8C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{414E0556-25F2-40F8-A6D8-049F0B82BC8C} = {EE162A63-5C60-48C3-81ED-5B02F6595D7E}
 	EndGlobalSection
 EndGlobal

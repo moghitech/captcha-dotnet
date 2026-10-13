@@ -1,0 +1,30 @@
+@Captcha_HostAddress = http://localhost:5043
+@ConsumerKey = AQAAAAEAACcQAAAAEA1BZ6AMp1VFV+P2U5HBjqE9FhMQKl8AZm5GllaVQqsJqLCbE8Bj2bWaLfJKg1+WFg==
+@ChallengeId = YOUR_CHALLENGE_ID
+@Purpose = registration
+@Answer = YOUR_CAPTCHA_ANSWER
+
+### Issue CAPTCHA Challenge (Anonymous)
+POST {{Captcha_HostAddress}}/api/v1/challenges
+Content-Type: application/json
+Accept: application/json
+
+{
+  "purpose": "{{Purpose}}"
+}
+
+### Verify CAPTCHA Challenge (Authenticated Consumer)
+POST {{Captcha_HostAddress}}/api/v1/verify
+X-Consumer-Key: {{ConsumerKey}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": "{{ChallengeId}}",
+  "purpose": "{{Purpose}}",
+  "answer": "{{Answer}}"
+}
+
+### Health Check (Redis Connectivity)
+GET {{Captcha_HostAddress}}/healthz
+Accept: application/json

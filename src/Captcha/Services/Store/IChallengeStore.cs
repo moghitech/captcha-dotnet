@@ -1,6 +1,6 @@
-﻿using Captcha.Store.Models;
+﻿using Captcha.Services.Store.Models;
 
-namespace Captcha.Store;
+namespace Captcha.Services.Store;
 
 /*
  * REDIS SCHEMA  (works unchanged on Valkey)
@@ -9,7 +9,7 @@ namespace Captcha.Store;
  * Type     HASH
  * TTL      Captcha:TtlSeconds (default 120). Set in the same MULTI/EXEC as the write, so a crash
  *          can never leave a key without an expiry.
- * Fields   mac      32 raw bytes  HMAC-SHA256(macKey, id \n purpose \n normalisedAnswer)
+ * Fields Mac 32 raw bytes  HMAC-SHA256(macKey, id \n purpose \n normalisedAnswer)
  *          purpose  string        e.g. "login"; a challenge is only valid for the purpose it was issued for
  *          left     integer       attempts remaining; decremented BEFORE the comparison
  *
@@ -35,7 +35,29 @@ namespace Captcha.Store;
  */
 public interface IChallengeStore
 {
+    /// <summary>
+    /// Stores a new challenge with the specified identifier, message authentication code, purpose, attempt count, and time-to-live.
+    /// </summary>
+    /// <param name="id">The unique identifier of the challenge.</param>
+    /// <param name="mac">The message authentication code associated with the challenge.</param>
+    /// <param name="purpose">The purpose for which the challenge was issued.</param>
+    /// <param name="attempts">The number of attempts allowed for the challenge.</param>
+    /// <param name="ttl">The duration for which the challenge remains valid.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     Task PutAsync(string id, byte[] mac, string purpose, int attempts, TimeSpan ttl);
+
+    /// <summary>
+    /// Consumes a single attempt for the challenge with the specified identifier and purpose.
+    /// </summary>
+    /// <param name="id">The unique identifier of the challenge.</param>
+    /// <param name="purpose">The purpose for which the challenge was issued.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the consumed challenge, or <c>null</c> if the challenge was not found or is no longer valid.</returns>
     Task<ConsumedChallenge?> ConsumeAttemptAsync(string id, string purpose);
+
+    /// <summary>
+    /// Attempts to delete the challenge with the specified identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the challenge to delete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <c>true</c> if the challenge was deleted; otherwise, <c>false</c>.</returns>
     Task<bool> TryDeleteAsync(string id);
 }

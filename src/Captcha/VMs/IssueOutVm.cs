@@ -1,4 +1,4 @@
-﻿namespace Captcha.Models;
+﻿namespace Captcha.VMs;
 
 /// <summary>
 /// Represents the response returned when a new CAPTCHA challenge is issued, including the challenge identifier, rendered image, and validity constraints.
