@@ -7,11 +7,20 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1591</NoWarn>
+        <PackageId>CityDi.Captcha.Client</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>CityDi</Authors>
+        <Company>CityDi</Company>
+        <Description>Official .NET client SDK for communicating with the CityDi Captcha service.</Description>
+        <PackageTags>captcha;client;sdk;api;citydi</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Basical.Modules.Tools.Cache" Version="1.0.12" />
         <PackageReference Include="CityDi.Common.Core" Version="1.0.41" />
+        <PackageReference Include="CityDi.Customer.Common" Version="1.0.19" />
         <PackageReference Include="SkiaSharp" Version="4.153.1"/>
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1"/>
         <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.3.0"/>

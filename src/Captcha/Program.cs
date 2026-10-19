@@ -1,11 +1,13 @@
 using System.Net;
 using System.Text.Json.Serialization;
+using Captcha.Client.Constants;
 using Captcha.Enums;
 using Captcha.Extensions;
 using Captcha.Filters;
 using Captcha.Options;
 using Captcha.Services.Manage;
 using Captcha.VMs;
+using Common.Core.Microservice.Domain;
 using Common.Core.Microservice.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using StackExchange.Redis;
@@ -62,39 +64,41 @@ app.UseCors();
 app.UseRateLimiter();
 
 // Browser-facing: anonymous, CORS allow-list, rate limited per IP.
-app.MapPost(pattern: "api/v1/challenges", async (IssueInBodyVm req, CaptchaManager mgr) =>
+app.MapPost(pattern: CaptchaUriConstants.Challenge, async (IssueInBodyVm req, CaptchaManager mgr) =>
     {
         if (!mgr.IsKnownPurpose(req.Purpose))
             return Results.Problem(statusCode: 400, title: "Unknown purpose");
 
         var challenge = await mgr.IssueAsync(req.Purpose!);
         var image = "data:image/png;base64," + Convert.ToBase64String(challenge.Png);
-
-        var response = new IssueOutVm(
+        
+        var issue = new IssueOutVm(
             Id: challenge.Id,
             Image: image,
             MimeType: "image/png",
             ExpiresInSeconds: challenge.ExpiresInSeconds,
             AttemptsAllowed: challenge.AttemptsAllowed
         );
-        return Results.Json(response, statusCode: StatusCodes.Status201Created);
+        return Results.Json(new ApiResult<IssueOutVm>(issue), statusCode: StatusCodes.Status201Created);
     })
+    .AddEndpointFilter<ConsumerAuthFilter>()
     .RequireCors("browser")
     .RequireRateLimiting("issue");
 
 // Backend-facing: authenticated per consumer, no CORS (browsers must never call it).
-app.MapPost(pattern: "api/v1/verify", async (VerifyInBodyVm req, CaptchaManager mgr) =>
+app.MapPost(pattern: CaptchaUriConstants.Verify, async (VerifyInBodyVm req, CaptchaManager mgr) =>
     {
         if (!Validation.IsId(req.Id) || !mgr.IsKnownPurpose(req.Purpose) || !Validation.IsAnswer(req.Answer))
             return Results.Problem(statusCode: 400, title: "Malformed request");
 
         var r = await mgr.VerifyAsync(req.Id!, req.Purpose!, req.Answer!);
-        return Results.Ok(r.Status switch
+        var verify = r.Status switch
         {
             VerifyStatus.Success => new VerifyOutVm(Success: true),
             VerifyStatus.Incorrect => new VerifyOutVm(Success: false, Reason: "incorrect", r.AttemptsLeft),
             _ => new VerifyOutVm(Success: false, Reason: "expired_or_used")
-        });
+        };
+        return Results.Ok(new ApiResult<VerifyOutVm>(verify));
     })
     .AddEndpointFilter<ConsumerAuthFilter>();
 

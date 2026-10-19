@@ -6,11 +6,6 @@
 public sealed class ConsumerKey
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the consumer.
-    /// </summary>
-    public string ClientId { get; set; } = "";
-
-    /// <summary>
     /// Gets or sets the hex-encoded SHA-256 hash of the consumer's secret key. Generate the key from 32 random bytes.
     /// </summary>
     public string KeySha256Hex { get; set; } = "";
