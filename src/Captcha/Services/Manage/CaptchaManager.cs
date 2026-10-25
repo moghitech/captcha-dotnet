@@ -70,7 +70,7 @@ public sealed class CaptchaManager
 
     private byte[] Mac(string id, string purpose, string normalisedAnswer) =>
         // id/purpose/answer are validated to never contain '\n', so the encoding is unambiguous.
-        HMACSHA256.HashData(_macKey, Encoding.UTF8.GetBytes($"{id}\n{purpose}\n{normalisedAnswer}"));
+        HMACSHA256.HashData(_macKey, source: Encoding.UTF8.GetBytes($"{id}\n{purpose}\n{normalisedAnswer}"));
 
     private string NewAnswer()
     {
